@@ -67,23 +67,42 @@ void setup() {
   }
 }
 
-void beep() {
-  audio.tone(600);
+void beep(int freq) {
+  audio.tone(freq);
   delay(125);
   audio.tone(1);
   delay(125);
 }
 
 void loop() {
+  radio.setOutputPower(17);
   Serial.print(F("[Morse] Sending Morse data ... "));
 
   morse.startSignal();
   morse.print("N9WXU Rocket Finder");
 
   delay(100);
-  for (int x = 0; x < 25; x++) {
-    beep();
-  }
+  radio.setOutputPower(17);
+  beep(800);
+  radio.setOutputPower(12);
+  beep(700);
+  radio.setOutputPower(6);
+  beep(600);
+  radio.setOutputPower(3);
+  beep(500);
+  radio.setOutputPower(2);
+  beep(400);
+  delay(100);
+  radio.setOutputPower(17);
+  beep(800);
+  radio.setOutputPower(12);
+  beep(700);
+  radio.setOutputPower(6);
+  beep(600);
+  radio.setOutputPower(3);
+  beep(500);
+  radio.setOutputPower(2);
+  beep(400);
 
   radio.standby();
   delay(2000);
