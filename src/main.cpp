@@ -74,36 +74,54 @@ void beep(int freq) {
   delay(125);
 }
 
-void loop() {
+void runMorseSequence(String callsign) {
+  morse.begin(TX_FREQUENCY, MORSE_SPEED);
   radio.setOutputPower(17);
   Serial.print(F("[Morse] Sending Morse data ... "));
-
   morse.startSignal();
-  morse.print("N9WXU Rocket Finder");
-
-  delay(100);
-  radio.setOutputPower(17);
-  beep(800);
-  radio.setOutputPower(12);
-  beep(700);
-  radio.setOutputPower(6);
-  beep(600);
-  radio.setOutputPower(3);
-  beep(500);
-  radio.setOutputPower(2);
-  beep(400);
-  delay(100);
-  radio.setOutputPower(17);
-  beep(800);
-  radio.setOutputPower(12);
-  beep(700);
-  radio.setOutputPower(6);
-  beep(600);
-  radio.setOutputPower(3);
-  beep(500);
-  radio.setOutputPower(2);
-  beep(400);
-
+  morse.print(callsign);
+  morse.print(" Rocket Finder");
   radio.standby();
+}
+
+void runBeepSequence() {
+  radio.startDirect();
+  delay(100);
+  radio.setOutputPower(17);
+  beep(800);
+  radio.setOutputPower(12);
+  beep(700);
+  radio.setOutputPower(6);
+  beep(600);
+  radio.setOutputPower(3);
+  beep(500);
+  radio.setOutputPower(2);
+  beep(400);
+  delay(100);
+  radio.setOutputPower(17);
+  beep(800);
+  radio.setOutputPower(12);
+  beep(700);
+  radio.setOutputPower(6);
+  beep(600);
+  radio.setOutputPower(3);
+  beep(500);
+  radio.setOutputPower(2);
+  beep(400);
+  radio.standby();
+}
+
+void loraData(String data) {
+  radio.setOutputPower(17);
+  radio.setBandwidth(10.4);
+  radio.setSpreadingFactor(12);
+  radio.startTransmit(data);
+  radio.standby();
+}
+
+void loop() {
+  runMorseSequence(CALLSIGN);
+  delay(100);
+  runBeepSequence();
   delay(2000);
 }

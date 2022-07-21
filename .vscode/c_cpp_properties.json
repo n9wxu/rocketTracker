@@ -10,7 +10,7 @@
             "includePath": [
                 "/Users/joejulicher/Documents/PlatformIO/Projects/rocketTracker/include",
                 "/Users/joejulicher/Documents/PlatformIO/Projects/rocketTracker/src",
-                "/Users/joejulicher/Documents/PlatformIO/Projects/rocketTracker/.pio/libdeps/adafruit_feather_m0/RadioLib/src",
+                "/Users/joejulicher/Documents/PlatformIO/Projects/rocketTracker/.pio/libdeps/joe/RadioLib/src",
                 "/Users/joejulicher/.platformio/packages/framework-arduino-samd-adafruit/libraries/SPI",
                 "/Users/joejulicher/.platformio/packages/framework-arduino-samd-adafruit/libraries/Adafruit_ZeroDMA",
                 "/Users/joejulicher/.platformio/packages/framework-arduino-samd-adafruit/libraries/Adafruit_ZeroDMA/utility",
@@ -36,7 +36,7 @@
                 "path": [
                     "/Users/joejulicher/Documents/PlatformIO/Projects/rocketTracker/include",
                     "/Users/joejulicher/Documents/PlatformIO/Projects/rocketTracker/src",
-                    "/Users/joejulicher/Documents/PlatformIO/Projects/rocketTracker/.pio/libdeps/adafruit_feather_m0/RadioLib/src",
+                    "/Users/joejulicher/Documents/PlatformIO/Projects/rocketTracker/.pio/libdeps/joe/RadioLib/src",
                     "/Users/joejulicher/.platformio/packages/framework-arduino-samd-adafruit/libraries/SPI",
                     "/Users/joejulicher/.platformio/packages/framework-arduino-samd-adafruit/libraries/Adafruit_ZeroDMA",
                     "/Users/joejulicher/.platformio/packages/framework-arduino-samd-adafruit/libraries/Adafruit_ZeroDMA/utility",
@@ -64,6 +64,7 @@
                 "ARDUINO_SAMD_FEATHER_M0",
                 "ARM_MATH_CM0PLUS",
                 "__SAMD21G18A__",
+                "CALLSIGN=\"N9WXU\"",
                 "LoRa_cs=8",
                 "LoRa_rst=4",
                 "LoRa_dio0=3",

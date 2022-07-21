@@ -12,22 +12,22 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug",
-            "executable": "/Users/joejulicher/Documents/PlatformIO/Projects/rocketTracker/.pio/build/adafruit_feather_m0/firmware.elf",
-            "projectEnvName": "adafruit_feather_m0",
+            "executable": "/Users/joejulicher/Documents/PlatformIO/Projects/rocketTracker/.pio/build/joe/firmware.elf",
+            "projectEnvName": "joe",
             "toolchainBinDir": "/Users/joejulicher/.platformio/packages/toolchain-gccarmnoneeabi/bin",
             "internalConsoleOptions": "openOnSessionStart",
             "svdPath": "/Users/joejulicher/.platformio/platforms/atmelsam/misc/svd/ATSAMD21G18A.svd",
             "preLaunchTask": {
                 "type": "PlatformIO",
-                "task": "Pre-Debug (adafruit_feather_m0)"
+                "task": "Pre-Debug (joe)"
             }
         },
         {
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (skip Pre-Debug)",
-            "executable": "/Users/joejulicher/Documents/PlatformIO/Projects/rocketTracker/.pio/build/adafruit_feather_m0/firmware.elf",
-            "projectEnvName": "adafruit_feather_m0",
+            "executable": "/Users/joejulicher/Documents/PlatformIO/Projects/rocketTracker/.pio/build/joe/firmware.elf",
+            "projectEnvName": "joe",
             "toolchainBinDir": "/Users/joejulicher/.platformio/packages/toolchain-gccarmnoneeabi/bin",
             "internalConsoleOptions": "openOnSessionStart",
             "svdPath": "/Users/joejulicher/.platformio/platforms/atmelsam/misc/svd/ATSAMD21G18A.svd"
@@ -36,8 +36,8 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (without uploading)",
-            "executable": "/Users/joejulicher/Documents/PlatformIO/Projects/rocketTracker/.pio/build/adafruit_feather_m0/firmware.elf",
-            "projectEnvName": "adafruit_feather_m0",
+            "executable": "/Users/joejulicher/Documents/PlatformIO/Projects/rocketTracker/.pio/build/joe/firmware.elf",
+            "projectEnvName": "joe",
             "toolchainBinDir": "/Users/joejulicher/.platformio/packages/toolchain-gccarmnoneeabi/bin",
             "internalConsoleOptions": "openOnSessionStart",
             "svdPath": "/Users/joejulicher/.platformio/platforms/atmelsam/misc/svd/ATSAMD21G18A.svd",
