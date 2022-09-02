@@ -38,6 +38,7 @@ SX1276 radio = new Module(LoRa_cs, LoRa_dio0, LoRa_rst, LoRa_dio1);
 
 void setup() {
 
+  Serial1.begin(9600);
   Serial.begin(9600);
   Serial.print(F("[RADIO] Begin ... "));
   int state = radio.begin(TX_FREQUENCY, BANDWIDTH, SPREADING_FACTOR, CODE_RATE,
@@ -50,8 +51,10 @@ void setup() {
 }
 
 void loop() {
-  Serial.println("Sending Data");
-  radio.transmit("Hello_World");
-  Serial.println("Sleeping a bit");
-  delay(1000);
+  String data;
+  if (Serial1.available()) {
+    data = Serial1.readStringUntil('\n');
+    Serial.println("data : " + data);
+    radio.transmit(data);
+  }
 }
