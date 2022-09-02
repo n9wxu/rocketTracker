@@ -21,107 +21,37 @@
 */
 
 #include <RadioLib.h>
+
 #include <stdio.h>
 #include <string.h>
 
 // important parameters for AFSK
-#define TX_FREQUENCY 432.10
-#define MORSE_SPEED 20
-#define FREQ_DEVIATION 2.5F
+#define TX_FREQUENCY 443.775F
+#define BANDWIDTH 125.0F
+#define SPREADING_FACTOR 9U
+#define CODE_RATE 7
+#define SYNC_WORD 0x12
+#define PREAMBLE 8
 #define TX_POWER 10
 
-// not important to AFSK
-#define BAUDRATE 4.8F
-#define BANDWIDTH 125.0F
-#define PREAMBLE 0
-
-SX1276 radio = new Module(LoRa_cs, -1, LoRa_rst, -1);
-AFSKClient audio(&radio, LoRa_dio2);
-MorseClient morse(&audio);
+SX1276 radio = new Module(LoRa_cs, LoRa_dio0, LoRa_rst, LoRa_dio1);
 
 void setup() {
+
   Serial.begin(9600);
-
-  Serial.print(F("[SX1278] Initializing ... "));
-  int state = radio.beginFSK(TX_FREQUENCY, BAUDRATE, FREQ_DEVIATION, BANDWIDTH,
-                             TX_POWER, PREAMBLE, false);
-
-  if (state == RADIOLIB_ERR_NONE) {
-    Serial.println(F("success!"));
-  } else {
-    Serial.print(F("failed, code "));
+  Serial.print(F("[RADIO] Begin ... "));
+  int state = radio.begin(TX_FREQUENCY, BANDWIDTH, SPREADING_FACTOR, CODE_RATE,
+                          SYNC_WORD, TX_POWER, PREAMBLE, 0);
+  if (state != RADIOLIB_ERR_NONE) {
+    Serial.println(F("[SX1278] Unable to begin"));
     Serial.println(state);
-    while (true)
-      ;
-  }
-
-  Serial.print(F("[Morse] Initializing ... "));
-  state = morse.begin(TX_FREQUENCY, MORSE_SPEED);
-  if (state == RADIOLIB_ERR_NONE) {
-    Serial.println(F("success!"));
   } else {
-    Serial.print(F("failed, code "));
-    Serial.println(state);
-    while (true)
-      ;
   }
-}
-
-void beep(int freq) {
-  audio.tone(freq);
-  delay(125);
-  audio.tone(1);
-  delay(125);
-}
-
-void runMorseSequence(String callsign) {
-  morse.begin(TX_FREQUENCY, MORSE_SPEED);
-  radio.setOutputPower(17);
-  Serial.print(F("[Morse] Sending Morse data ... "));
-  morse.startSignal();
-  morse.print(callsign);
-  morse.print(" Rocket Finder");
-  radio.standby();
-}
-
-void runBeepSequence() {
-  radio.startDirect();
-  delay(100);
-  radio.setOutputPower(17);
-  beep(800);
-  radio.setOutputPower(12);
-  beep(700);
-  radio.setOutputPower(6);
-  beep(600);
-  radio.setOutputPower(3);
-  beep(500);
-  radio.setOutputPower(2);
-  beep(400);
-  delay(100);
-  radio.setOutputPower(17);
-  beep(800);
-  radio.setOutputPower(12);
-  beep(700);
-  radio.setOutputPower(6);
-  beep(600);
-  radio.setOutputPower(3);
-  beep(500);
-  radio.setOutputPower(2);
-  beep(400);
-  radio.standby();
-}
-
-void loraData(String data) {
-  radio.setOutputPower(17);
-  radio.setBandwidth(10.4);
-  radio.setSpreadingFactor(12);
-  radio.startTransmit(data);
-  radio.standby();
 }
 
 void loop() {
-  runMorseSequence(CALLSIGN);
-  delay(100);
-  runBeepSequence();
-  delay(2000);
+  Serial.println("Sending Data");
+  radio.transmit("Hello_World");
+  Serial.println("Sleeping a bit");
+  delay(1000);
 }
