@@ -22,6 +22,7 @@
 
 #include <RadioLib.h>
 
+#include <TinyGPSPlus.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -35,9 +36,11 @@
 #define TX_POWER 10
 
 SX1276 radio = new Module(LoRa_cs, LoRa_dio0, LoRa_rst, LoRa_dio1);
+TinyGPSPlus gps;
 
 void setup() {
 
+  pinMode(LED_BUILTIN, OUTPUT);
   Serial1.begin(9600);
   Serial.begin(9600);
   Serial.print(F("[RADIO] Begin ... "));
@@ -52,9 +55,20 @@ void setup() {
 
 void loop() {
   String data;
-  if (Serial1.available()) {
-    data = Serial1.readStringUntil('\n');
-    Serial.println("data : " + data);
-    radio.transmit(data);
+
+  while (Serial1.available()) {
+    gps.encode(Serial1.read());
+  }
+
+  if (gps.location.isUpdated()) {
+    digitalWrite(LED_BUILTIN, HIGH);
+    String location = String(gps.location.lat()) + String(gps.location.lng());
+    Serial.println("location");
+    radio.transmit(String(CALLSIGN) + " " + location);
+    digitalWrite(LED_BUILTIN, LOW);
+  }
+
+  if (gps.satellites.isValid()) {
+    Serial.println("Sat Count : " + String(gps.satellites.value()));
   }
 }
