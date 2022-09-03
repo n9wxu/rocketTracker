@@ -40,7 +40,7 @@
 #define PREAMBLE 8
 #define TX_POWER 10
 
-#define UPDATE_RATE_MS 1000
+#define UPDATE_RATE_MS 5000
 
 // this combination should be a rocket
 #define SYMBOL "O"
