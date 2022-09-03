@@ -26,6 +26,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <APRS-Decoder.h>
+
 // important parameters for AFSK
 #define TX_FREQUENCY 443.775F
 #define BANDWIDTH 125.0F
@@ -34,6 +36,8 @@
 #define SYNC_WORD 0x12
 #define PREAMBLE 8
 #define TX_POWER 10
+
+#define UPDATE_RATE_MS 1000
 
 SX1276 radio = new Module(LoRa_cs, LoRa_dio0, LoRa_rst, LoRa_dio1);
 TinyGPSPlus gps;
@@ -55,12 +59,20 @@ void setup() {
 
 void loop() {
   String data;
+  bool sendUpdate = false;
+  static uint32_t previousUpdate = 0;
+  uint32_t now = millis();
+
+  if (now - previousUpdate > UPDATE_RATE_MS) {
+    sendUpdate = true;
+    previousUpdate = now;
+  }
 
   while (Serial1.available()) {
     gps.encode(Serial1.read());
   }
 
-  if (gps.location.isUpdated()) {
+  if (gps.location.isUpdated() && sendUpdate) {
     digitalWrite(LED_BUILTIN, HIGH);
     String location = String(gps.location.lat()) + String(gps.location.lng());
     Serial.println("location");
