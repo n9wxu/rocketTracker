@@ -126,7 +126,8 @@ void loop() {
     aprsmsg += " -  _Bat.: " + String(batteryVoltage(), 2) +
                "V - Cur.: " + "0" + " mA ";
 
-    msg.getBody()->setData(aprsmsg);
+    msg.getAPRSBody()->setData(aprsmsg);
+    // msg.getBody()->setData(aprsmsg);
     const char header[] = {'<', 0xFF, 0x01, 0};
     String data = String(header) + String(msg.encode());
 
