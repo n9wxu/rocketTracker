@@ -265,6 +265,7 @@ char *s_min_nn(uint32_t min_nnnnn, int high_precision) {
   return buf;
 }
 
+// the battery voltage is only suitable if a resistor divider is added
 float batteryVoltage() {
   float measuredvbat = analogRead(VBATPIN);
   measuredvbat *= 2;    // we divided by 2, so multiply back
