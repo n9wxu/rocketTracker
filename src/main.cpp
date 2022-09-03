@@ -73,6 +73,10 @@ void loop() {
   }
 
   if (gps.location.isUpdated() && sendUpdate) {
+
+    //    APRSMessage msg;
+    //    msg.setSource(CALLSIGN);
+
     digitalWrite(LED_BUILTIN, HIGH);
     String location = String(gps.location.lat()) + String(gps.location.lng());
     Serial.println("location");
