@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <APRS-Decoder.h>
+#include <ax25_payload.h>
 
 #define VBATPIN A7
 
@@ -41,104 +41,124 @@
 #define TX_POWER 10
 
 #define UPDATE_RATE_MS 5000
+#define MORSE_RATE_MS 10000
 
 // this combination should be a rocket
-#define SYMBOL "O"
-#define OVERLAY "/"
+#define SYMBOL 'O'
 
 SX1276 radio = new Module(LoRa_cs, LoRa_dio0, LoRa_rst, LoRa_dio1);
+AFSKClient audio(&radio, LoRa_dio2);
+MorseClient morse(&audio);
+
 TinyGPSPlus gps;
 
 char *s_min_nn(uint32_t min_nnnnn, int high_precision);
 String create_lat_aprs(RawDegrees lat);
 String create_long_aprs(RawDegrees lng);
-String create_lat_aprs_dao(RawDegrees lat);
-String create_long_aprs_dao(RawDegrees lng);
-String create_dao_aprs(RawDegrees lat, RawDegrees lng);
 String createDateString(time_t t);
 String createTimeString(time_t t);
 String padding(unsigned int number, unsigned int width);
 float batteryVoltage();
+void sendBeacon();
+void sendBeep();
+void sendMorse();
 
 void setup() {
 
   pinMode(LED_BUILTIN, OUTPUT);
   Serial1.begin(9600);
   Serial.begin(9600);
-  Serial.print(F("[RADIO] Begin ... "));
-  int state = radio.begin(TX_FREQUENCY, BANDWIDTH, SPREADING_FACTOR, CODE_RATE,
-                          SYNC_WORD, TX_POWER, PREAMBLE, 0);
-  if (state != RADIOLIB_ERR_NONE) {
-    Serial.println(F("[SX1278] Unable to begin"));
-    Serial.println(state);
-  } else {
-  }
 }
 
 void loop() {
   String data;
-  bool sendUpdate = false;
-  static uint32_t previousUpdate = 0;
+  static uint32_t aprsUpdate = 0;
+  static uint32_t morseUpdate = 0;
   uint32_t now = millis();
-
-  if (now - previousUpdate > UPDATE_RATE_MS) {
-    sendUpdate = true;
-    previousUpdate = now;
-  }
 
   while (Serial1.available()) {
     gps.encode(Serial1.read());
   }
 
-  if (gps.location.isUpdated() && sendUpdate) {
-    digitalWrite(LED_BUILTIN, HIGH);
-    APRSMessage msg;
-    String lat;
-    String lng;
-    String alt = "";
+  sendBeep();
 
-    msg.setSource(CALLSIGN);
-    msg.setDestination("APLT00");
-    lat = create_lat_aprs(gps.location.rawLat());
-    lng = create_long_aprs(gps.location.rawLng());
-
-    int alt_int = max(-99999, min(999999, (int)gps.altitude.feet()));
-    if (alt_int < 0) {
-      alt = "/A=-" + padding(alt_int * -1, 5);
-    } else {
-      alt = "/A=" + padding(alt_int, 6);
-    }
-
-    String course_and_speed = "";
-    int speed_int = max(0, min(999, (int)gps.speed.knots()));
-    String speed = padding(speed_int, 3);
-    int course_int = max(0, min(360, (int)gps.course.deg()));
-    /* course in between 1..360 due to aprs spec */
-    if (course_int == 0) {
-      course_int = 360;
-    }
-    String course = padding(course_int, 3);
-    course_and_speed = course + "/" + speed;
-
-    String aprsmsg;
-    aprsmsg = "!" + lat + OVERLAY + lng + SYMBOL + course_and_speed + alt;
-
-    aprsmsg += " -  _Bat.: " + String(batteryVoltage(), 2) +
-               "V - Cur.: " + "0" + " mA ";
-
-    msg.getAPRSBody()->setData(aprsmsg);
-    // msg.getBody()->setData(aprsmsg);
-    const char header[] = {'<', 0xFF, 0x01, 0};
-    String data = String(header) + String(msg.encode());
-
-    Serial.println(data);
-    radio.transmit(data);
-
-    digitalWrite(LED_BUILTIN, LOW);
+  if (now - aprsUpdate > UPDATE_RATE_MS) {
+    aprsUpdate = now;
+    sendBeacon();
   }
 
-  if (gps.satellites.isValid()) {
-    Serial.println("Sat Count : " + String(gps.satellites.value()));
+  if (now - morseUpdate > MORSE_RATE_MS) {
+    morseUpdate = now;
+    sendMorse();
+  }
+}
+
+void sendMorse() {
+  Serial.println(F("Morse " CALLSIGN));
+  radio.reset();
+  radio.beginFSK(TX_FREQUENCY);
+  morse.begin(400);
+  morse.startSignal();
+  morse.print(CALLSIGN);
+}
+
+void sendBeep() {
+  Serial.println(F("Beeping"));
+
+  radio.reset();
+  radio.beginFSK(TX_FREQUENCY);
+  audio.tone(600);
+  delay(200);
+  audio.tone(1);
+  delay(200);
+}
+
+void sendBeacon() {
+  if (gps.location.isUpdated()) {
+    Serial.print(F("[RADIO] Begin ... "));
+    radio.reset();
+    int state = radio.begin(TX_FREQUENCY, BANDWIDTH, SPREADING_FACTOR,
+                            CODE_RATE, SYNC_WORD, TX_POWER, PREAMBLE, 0);
+    if (state != RADIOLIB_ERR_NONE) {
+      Serial.println(F("[SX1278] Unable to begin"));
+      Serial.println(state);
+    } else {
+      digitalWrite(LED_BUILTIN, HIGH);
+      String lat;
+      String lng;
+      String alt;
+
+      lat = create_lat_aprs(gps.location.rawLat());
+      lng = create_long_aprs(gps.location.rawLng());
+
+      int alt_int = max(-99999, min(999999, (int)gps.altitude.feet()));
+      if (alt_int < 0) {
+        alt = "/A=-" + padding(alt_int * -1, 5);
+      } else {
+        alt = "/A=" + padding(alt_int, 6);
+      }
+
+      String course_and_speed = "";
+      int speed_int = max(0, min(999, (int)gps.speed.knots()));
+      String speed = padding(speed_int, 3);
+      int course_int = max(0, min(360, (int)gps.course.deg()));
+      /* course in between 1..360 due to aprs spec */
+      if (course_int == 0) {
+        course_int = 360;
+      }
+      String course = padding(course_int, 3);
+      course_and_speed = course + "/" + speed;
+
+      AX25::Payload payload(CALLSIGN "-11>BEACON:!" + lat + "\\" + lng + "O" +
+                            alt);
+
+      uint8_t txBuffer[256];
+      int txLength = payload.ToBinary(txBuffer, sizeof(txBuffer));
+
+      radio.transmit(txBuffer, txLength);
+
+      digitalWrite(LED_BUILTIN, LOW);
+    }
   }
 }
 
@@ -157,22 +177,6 @@ String create_lat_aprs(RawDegrees lat) {
   return lat_str;
 }
 
-String create_lat_aprs_dao(RawDegrees lat) {
-  // round to 4 digits and cut the last 2
-  char str[20];
-  char n_s = 'N';
-  if (lat.negative) {
-    n_s = 'S';
-  }
-  // we need sprintf's float up-rounding. Must be the same principle as in
-  // aprs_dao(). We cut off the string to two decimals afterwards. but sprintf
-  // % may round to 60.0000 -> 5360.0000 (53° 60min is a wrong notation ;)
-  sprintf(str, "%02d%s%c", lat.deg,
-          s_min_nn(lat.billionths, 1 /* high precision */), n_s);
-  String lat_str(str);
-  return lat_str;
-}
-
 String create_long_aprs(RawDegrees lng) {
   char str[20];
   char e_w = 'E';
@@ -182,33 +186,6 @@ String create_long_aprs(RawDegrees lng) {
   sprintf(str, "%03d%s%c", lng.deg, s_min_nn(lng.billionths, 0), e_w);
   String lng_str(str);
   return lng_str;
-}
-
-String create_long_aprs_dao(RawDegrees lng) {
-  // round to 4 digits and cut the last 2
-  char str[20];
-  char e_w = 'E';
-  if (lng.negative) {
-    e_w = 'W';
-  }
-  sprintf(str, "%03d%s%c", lng.deg,
-          s_min_nn(lng.billionths, 1 /* high precision */), e_w);
-  String lng_str(str);
-  return lng_str;
-}
-
-String create_dao_aprs(RawDegrees lat, RawDegrees lng) {
-  // !DAO! extension, use Base91 format for best precision
-  // /1.1 : scale from 0-99 to 0-90 for base91, int(... + 0.5): round to
-  // nearest integer https://metacpan.org/dist/Ham-APRS-FAP/source/FAP.pm
-  // http://www.aprs.org/aprs12/datum.txt
-  //
-
-  char str[10];
-  sprintf(str, "!w%s", s_min_nn(lat.billionths, 2));
-  sprintf(str + 3, "%s!", s_min_nn(lng.billionths, 2));
-  String dao_str(str);
-  return dao_str;
 }
 
 String createDateString(time_t t) {
